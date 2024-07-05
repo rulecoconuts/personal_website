@@ -1,8 +1,10 @@
+import 'reflect-metadata'
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lora } from "next/font/google";
 import "./globals.css";
+import SocialsColumn from './socials_column';
 
-const inter = Inter({ subsets: ["latin"] });
+const lora = Lora({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +18,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      {/* <head>
+        <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
+      </head> */}
+      <body className={`${lora.className} bg-[#394D74]`}>
+        <main className="flex min-h-screen flex-col items-center justify-between p-24">
+          {children}
+        </main>
+
+        <div className='absolute m-auto right-[20px] top-[50%] translate-y-[-50%]'>
+          <SocialsColumn />
+        </div>
+      </body>
+
     </html>
   );
 }
