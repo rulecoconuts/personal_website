@@ -1,5 +1,5 @@
 const appConstants = {
-    backendUrl: "http://localhost:7000"
+    backendUrl: process.env.BACKEND_URL
 }
 
 export default appConstants

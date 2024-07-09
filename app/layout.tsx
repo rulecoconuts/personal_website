@@ -22,9 +22,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
       </head> */}
       <body className={`${lora.className} bg-[#394D74]`}>
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-          {children}
-        </main>
+
+        {children}
+
 
         <div className='absolute m-auto right-[20px] top-[50%] translate-y-[-50%]'>
           <SocialsColumn />

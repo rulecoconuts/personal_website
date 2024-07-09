@@ -1,0 +1,12 @@
+services:
+  app:
+    image: personal_website
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "7000:7000"
+    volumes:
+      - /main/node_modules
