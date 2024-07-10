@@ -1,5 +1,5 @@
 const appConstants = {
-    backendUrl: process.env.BACKEND_URL
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL
 }
 
 export default appConstants
