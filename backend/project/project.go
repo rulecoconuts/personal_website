@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"4d63.com/optional"
 	"github.com/google/go-github/v62/github"
 )
 
@@ -25,7 +26,11 @@ func GetAllProjects() ([]ProjectItem, error) {
 	now := time.Now().String()
 
 	for i, repo := range public_repos {
-		projects = append(projects, ProjectItem{Name: *repo.Name, Id: strconv.Itoa(i), DateAdded: now, Url: *repo.URL, Description: *repo.Description})
+		if repo == nil {
+			continue
+		}
+		projects = append(projects, ProjectItem{Name: *repo.Name, Id: strconv.Itoa(i),
+			DateAdded: now, Url: *repo.URL, Description: optional.OfPtr(repo.Description).Else("")})
 	}
 
 	return projects, err

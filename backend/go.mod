@@ -3,6 +3,7 @@ module ofejiro.com/personal_website_backend
 go 1.22.3
 
 require (
+	4d63.com/optional v0.2.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/go-github/v62 v62.0.0
