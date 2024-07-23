@@ -5,8 +5,9 @@ import ProjectItemView from "./project_item_view";
 
 export default function ProjectsPage() {
     const projects = useAtomValue(loadableProjectsAtom);
+    console.log(projects);
 
-    if (projects.state === 'hasError') return (<></>);
+    if (projects.state === 'hasError') return (<>{JSON.stringify(projects.error)}</>);
 
     if (projects.state === 'loading') return (<></>);
 
@@ -24,7 +25,7 @@ export default function ProjectsPage() {
                         Projects
                     </div>
                 </div>
-                <div className="grid grid-cols-4 justify-start mt-10">
+                <div className="grid grid-cols-2 auto-rows-min justify-start mt-10 gap-x-2 gap-y-2">
                     {projectViews}
                 </div>
             </div>

@@ -10,7 +10,9 @@ class ProjectWebAPI {
             method: "GET",
         });
 
-        let projects: ProjectItem[] = JSON.parse(await response.json());
+        let j = await response.text();
+
+        let projects: ProjectItem[] = JSON.parse(j);
 
         return projects;
     }

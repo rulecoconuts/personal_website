@@ -12,26 +12,46 @@ import (
 // Fetch pinned github projects
 func GetAllProjects() ([]ProjectItem, error) {
 	client := github.NewClient(nil)
-	public_repos, _, err := client.Repositories.ListByUser(context.Background(), "rulecoconuts", &github.RepositoryListByUserOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 6,
-		},
-	})
-
-	if err != nil {
-		return nil, err
+	limit := 6
+	pageOption := github.ListOptions{
+		PerPage: limit,
 	}
 
-	projects := make([]ProjectItem, len(public_repos))
+	projects := make([]ProjectItem, limit)
 	now := time.Now().String()
 
-	for i, repo := range public_repos {
-		if repo == nil {
-			continue
+	nAppended := 0
+
+	for nAppended < limit {
+		pageOption.PerPage = limit - nAppended
+		public_repos, resp, err := client.Repositories.ListByUser(context.Background(), "rulecoconuts", &github.RepositoryListByUserOptions{
+			ListOptions: pageOption,
+		})
+
+		if err != nil {
+			return nil, err
 		}
-		projects = append(projects, ProjectItem{Name: *repo.Name, Id: strconv.Itoa(i),
-			DateAdded: now, Url: *repo.URL, Description: optional.OfPtr(repo.Description).Else("")})
+		for i, repo := range public_repos {
+			if repo == nil {
+				continue
+			}
+			if repo.Name == nil {
+				continue
+			}
+
+			if len(*repo.Name) == 0 {
+				continue
+			}
+			projects[nAppended] = ProjectItem{Name: *repo.Name, Id: strconv.Itoa(i),
+				DateAdded: now, Url: *repo.HTMLURL, Description: optional.OfPtr(repo.Description).Else("")}
+			nAppended++
+
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		pageOption.Page = resp.NextPage
 	}
 
-	return projects, err
+	return projects, nil
 }
