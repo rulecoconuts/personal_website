@@ -1,0 +1,3 @@
+I am a software engineer with an ever growing interest in the development of data-intensive applications.
+I am currently honing my skills by building backend tools and web APIs in Golang.
+My ultimate goal is to become at least as good as an Apollo-era engineer. I am gauging my distance from this goal by how much the systems I build can stand the test of time (and increasing load).

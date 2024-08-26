@@ -20,5 +20,5 @@ func main() {
 	social.Routes(router)
 	project.Routes(router)
 
-	router.Run(":7000")
+	router.Run(":9370")
 }

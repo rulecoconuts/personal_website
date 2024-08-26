@@ -1,11 +1,13 @@
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import ProjectItem from "./project_item";
 import appConstants from "../contants";
+import { ServerHelper } from "../server/server_helper";
 
 @Service()
 class ProjectWebAPI {
     async getAllProjects(): Promise<ProjectItem[]> {
-        let url = appConstants.backendUrl + "/projects";
+        let serverHelper = Container.get(ServerHelper);
+        let url = serverHelper.getBackendUrl() + "/projects";
         let response = await fetch(url, {
             method: "GET",
         });
