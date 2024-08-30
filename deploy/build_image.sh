@@ -1,0 +1,1 @@
+docker build -f ../Dockerfile -t afejith/personal-website:latest ../

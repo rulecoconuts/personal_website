@@ -11,11 +11,14 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowAllOrigins:  true,
+		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
 		AllowCredentials: true,
 	}))
+
+	router.GET("/", func(context *gin.Context) {
+		context.String(200, "success")
+	})
 
 	social.Routes(router)
 	project.Routes(router)

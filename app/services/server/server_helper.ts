@@ -4,9 +4,11 @@ import { Service } from "typedi";
 class ServerHelper {
     getBackendUrl(): string {
         let hostName = window.location.hostname;
+        let protocol = window.location.protocol;
         console.log(`Origin: ${hostName}`);
 
-        return `http://${hostName}:9370`;
+
+        return `${protocol}//${hostName}:9370`;
     }
 }
 

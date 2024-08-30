@@ -5,8 +5,8 @@
             "ContainerPort": "5000"
         },
         {
-            "HostPort": "7000",
-            "ContainerPort": "7000"
+            "HostPort": "9370",
+            "ContainerPort": "9370"
         }
     ]
 }

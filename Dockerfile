@@ -1,4 +1,4 @@
-FROM golang:alpine3.19
+FROM golang:alpine3.19 as go_build
 # ENV PATH="/usr/local/go/bin:${PATH}"
 
 WORKDIR /backend
@@ -8,14 +8,22 @@ RUN --mount=type=cache,target=/usr/local/go/pkg/mod go mod download && go mod ve
 COPY ./backend .
 RUN go build
 
-FROM node:alpine3.19
+# node dependency installation and build step
+FROM node:20-alpine3.19 as node_build
 WORKDIR /main
-COPY --from=0 /backend/personal_website_backend ./personal_website_backend
 
 COPY package.json ./
-RUN npm i
+RUN npm install
 
 COPY . .
 
+RUN echo Starting Build && npm run build
+
+# main container
+FROM node:20-alpine3.19 as main
+WORKDIR /main
+COPY --from=go_build /backend/personal_website_backend ./personal_website_backend
+COPY --from=node_build /main .
+
 CMD [ "sh", "docker_entrypoint.sh" ]
-EXPOSE 5000 7000
+EXPOSE 5000
