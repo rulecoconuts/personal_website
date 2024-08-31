@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"ofejiro.com/personal_website_backend/project"
@@ -8,12 +10,13 @@ import (
 )
 
 func main() {
+	fmt.Println("PWeb Server Version 1.0.0.0")
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
-		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
-		AllowCredentials: true,
+		AllowAllOrigins: true,
+		AllowOrigins:    []string{"*"},
+		ExposeHeaders:   []string{"Content-Length", "Content-Type"},
 	}))
 
 	router.GET("/", func(context *gin.Context) {
