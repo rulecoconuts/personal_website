@@ -8,10 +8,8 @@ func Routes(router *gin.Engine) {
 	group := router.Group("/socials")
 
 	// group.Use(cors.New(cors.Config{
-	// 	// AllowOrigins:     []string{"*"},
-	// 	AllowAllOrigins:  true,
-	// 	ExposeHeaders:    []string{"Content-Length", "Content-Type"},
-	// 	AllowCredentials: true,
+	// 	AllowAllOrigins: true,
+	// 	ExposeHeaders:   []string{"Content-Length", "Content-Type"},
 	// }))
 
 	{

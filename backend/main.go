@@ -10,14 +10,18 @@ import (
 )
 
 func main() {
-	fmt.Println("PWeb Server Version 1.0.0.0")
+	fmt.Println("PWeb Server Version 1.0.0.9")
+
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	router.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
-		AllowOrigins:    []string{"*"},
-		ExposeHeaders:   []string{"Content-Length", "Content-Type"},
-	}))
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowWildcard = true
+	corsConfig.AllowOrigins = []string{"https://ofejiro.com", "https://*.ofejiro.com"}
+	corsConfig.AllowCredentials = true
+	corsConfig.AddAllowHeaders("Origin")
+
+	router.Use(cors.New(corsConfig))
 
 	router.GET("/", func(context *gin.Context) {
 		context.String(200, "success")

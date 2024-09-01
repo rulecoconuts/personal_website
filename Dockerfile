@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7-labs
+
 FROM golang:alpine3.19 as go_build
 # ENV PATH="/usr/local/go/bin:${PATH}"
 
@@ -15,9 +17,8 @@ WORKDIR /main
 COPY package.json ./
 RUN npm install
 
-COPY . .
-
-RUN echo Starting Build && npm run build
+COPY --exclude=*.go . .
+RUN npm run build
 
 # main container
 FROM node:20-alpine3.19 as main

@@ -1,0 +1,1 @@
+docker run -p 5000:5000 -p 9370:9370 afejith/personal-website:latest

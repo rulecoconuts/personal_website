@@ -7,7 +7,7 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
   protect_from_scale_in = false
   #  desired_capacity      = var.ecs_desired_count
 
-  target_group_arns = [aws_alb_target_group.service.arn]
+  target_group_arns = [aws_alb_target_group.service.arn, aws_alb_target_group.backend.arn]
 
   enabled_metrics = [
     "GroupMinSize",
