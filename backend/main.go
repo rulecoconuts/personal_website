@@ -1,19 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"ofejiro.com/personal_website_backend/project"
 	"ofejiro.com/personal_website_backend/social"
 )
 
-func main() {
-	fmt.Println("PWeb Server Version 1.0.0.9")
+var ginLambda *ginadapter.GinLambda
 
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
+func buildEngine() *gin.Engine {
+	engine := gin.Default()
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowWildcard = true
@@ -21,14 +24,51 @@ func main() {
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Origin")
 
-	router.Use(cors.New(corsConfig))
+	engine.Use(cors.New(corsConfig))
 
-	router.GET("/", func(context *gin.Context) {
+	engine.GET("/", func(context *gin.Context) {
 		context.String(200, "success")
 	})
 
-	social.Routes(router)
-	project.Routes(router)
+	social.Routes(engine)
+	project.Routes(engine)
 
-	router.Run(":9370")
+	return engine
+}
+
+func launchStandard() {
+	gin.SetMode(gin.ReleaseMode)
+
+	engine := buildEngine()
+
+	engine.Run(":9370")
+}
+
+func initLambda() {
+	gin.SetMode(gin.ReleaseMode)
+	engine := buildEngine()
+
+	ginLambda = ginadapter.New(engine)
+}
+
+func init() {
+	initLambda()
+}
+
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return ginLambda.ProxyWithContext(ctx, request)
+}
+
+func launchLambda() {
+	lambda.Start(Handler)
+}
+
+func main() {
+	fmt.Println("PWeb Server Version 1.0.1.0")
+
+	if ginLambda == nil {
+		launchStandard()
+	} else {
+		launchLambda()
+	}
 }
