@@ -13,7 +13,7 @@ func Routes(router *gin.Engine) {
 	// }))
 
 	{
-		group.GET("/", func(context *gin.Context) {
+		group.GET("", func(context *gin.Context) {
 			context.JSON(200, GetSocials())
 		})
 	}

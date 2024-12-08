@@ -2,13 +2,22 @@ package main
 
 import (
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscertificatemanager"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscloudfront"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awss3"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awss3assets"
 	"github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
 
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
+
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscloudfrontorigins"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsroute53"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsroute53targets"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awss3deployment"
 )
 
 type CdkStackProps struct {
@@ -22,19 +31,85 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
+	// Deploy backend lambda function and API
 	lambdaFunction := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("personal-backend-function"), &awscdklambdagoalpha.GoFunctionProps{
 		Entry:   jsii.String("../backend"),
-		Runtime: awslambda.Runtime_GO_1_X(),
+		Runtime: awslambda.Runtime_PROVIDED_AL2(),
 	})
+
+	hostedZone := awsroute53.HostedZone_FromHostedZoneAttributes(stack, jsii.String("personal-website-hosted-zone"), &awsroute53.HostedZoneAttributes{
+		ZoneName:     jsii.String("ofejiro.com"),
+		HostedZoneId: jsii.String("Z05428331P8WLQ7347J2U"),
+	})
+
+	usEastDomainCertificate := awscertificatemanager.Certificate_FromCertificateArn(stack, jsii.String("personal-website-ssl-certificate"), jsii.String("arn:aws:acm:us-east-1:992382640465:certificate/e59b07a3-4fe3-4170-a6a9-8332cf2811ac"))
+	caCentralDomainCertificate := awscertificatemanager.Certificate_FromCertificateArn(stack, jsii.String("personal-website-ca-central-ssl-certificate"), jsii.String("arn:aws:acm:ca-central-1:992382640465:certificate/8789bcda-811d-493b-a56f-65f06e8d6e6e"))
 
 	api := awsapigateway.NewLambdaRestApi(stack, jsii.String("personal-backend-api-gateway"), &awsapigateway.LambdaRestApiProps{
 		Handler: lambdaFunction,
+		DefaultCorsPreflightOptions: &awsapigateway.CorsOptions{
+			AllowOrigins: awsapigateway.Cors_ALL_ORIGINS(),
+			AllowMethods: awsapigateway.Cors_ALL_METHODS(),
+		},
+		DomainName: &awsapigateway.DomainNameOptions{
+			DomainName:  jsii.String("backend." + *hostedZone.ZoneName()),
+			Certificate: caCentralDomainCertificate,
+		},
+	})
+
+	awsroute53.NewARecord(stack, jsii.String("personal-backend-dns-a-record"), &awsroute53.ARecordProps{
+		Zone:       hostedZone,
+		Target:     awsroute53.RecordTarget_FromAlias(awsroute53targets.NewApiGateway(api)),
+		RecordName: jsii.String("backend"),
 	})
 
 	app := api.Root()
 
-	subpath := app.AddResource(jsii.String("{subpath+}"), nil)
-	subpath.AddMethod(jsii.String("GET"), nil, nil)
+	app.AddMethod(jsii.String("GET"), nil, nil)
+
+	awscdk.NewCfnOutput(stack, jsii.String("personal-backend-api-gateway-endpoint"), &awscdk.CfnOutputProps{
+		ExportName: jsii.String("personal-backend-api-gateway-endpoint-url"),
+		Value:      api.Url(),
+	})
+
+	// Deploy frontend as a stack website on an s3 bucket + cloudfront
+	staticBucket := awss3.NewBucket(stack, jsii.String("personal-website-static-bucket-named"), &awss3.BucketProps{
+		AccessControl: awss3.BucketAccessControl_PRIVATE,
+		// BucketName:    jsii.String("personal-website-static"),
+	})
+
+	awss3deployment.NewBucketDeployment(stack, jsii.String("personal-website-static-bucket-deployment"), &awss3deployment.BucketDeploymentProps{
+		DestinationBucket: staticBucket,
+		Sources:           &[]awss3deployment.ISource{awss3deployment.Source_Asset(jsii.String("../out"), &awss3assets.AssetOptions{})},
+	})
+
+	originAccessIdentity := awscloudfront.NewOriginAccessIdentity(stack, jsii.String("personal-website-origin-access-identity"), &awscloudfront.OriginAccessIdentityProps{})
+
+	staticBucket.GrantRead(originAccessIdentity, nil)
+
+	cloudfrontDeployment := awscloudfront.NewDistribution(stack, jsii.String("personal-website-cloudfront-deployment"), &awscloudfront.DistributionProps{
+		DefaultRootObject: jsii.String("index.html"),
+		DomainNames:       &[]*string{hostedZone.ZoneName()},
+		Certificate:       usEastDomainCertificate,
+		DefaultBehavior: &awscloudfront.BehaviorOptions{
+			Origin: awscloudfrontorigins.S3BucketOrigin_WithOriginAccessIdentity(staticBucket, &awscloudfrontorigins.S3BucketOriginWithOAIProps{
+				OriginAccessIdentity: originAccessIdentity,
+			}),
+		},
+	})
+
+	// Set DNS Records for backend and frontend
+	// apiUrlWithoutTrailingSlash, _ := strings.CutSuffix(*api.Url(), "/")
+	// awsroute53.NewCnameRecord(stack, jsii.String("personal-backend-dns-cname-record"), &awsroute53.CnameRecordProps{
+	// 	RecordName: jsii.String("backend"),
+	// 	DomainName: jsii.String(apiUrlWithoutTrailingSlash),
+	// 	Zone:       hostedZone,
+	// })
+
+	awsroute53.NewARecord(stack, jsii.String("personal-website-dns-a-record"), &awsroute53.ARecordProps{
+		Zone:   hostedZone,
+		Target: awsroute53.RecordTarget_FromAlias(awsroute53targets.NewCloudFrontTarget(cloudfrontDeployment)),
+	})
 
 	// The code that defines your stack goes here
 

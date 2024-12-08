@@ -1,5 +1,6 @@
 {
   "app": "go mod download && go run cdk.go",
+  "profile": "afejith_admin_proxy",
   "watch": {
     "include": [
       "**"

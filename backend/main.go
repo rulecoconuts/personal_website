@@ -20,7 +20,8 @@ func buildEngine() *gin.Engine {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowWildcard = true
-	corsConfig.AllowOrigins = []string{"https://ofejiro.com", "https://*.ofejiro.com"}
+	// corsConfig.AllowOrigins = []string{"https://ofejiro.com", "https://*.ofejiro.com", "*"}
+	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Origin")
 

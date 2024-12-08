@@ -8,7 +8,7 @@ class SocialWebApi {
     async getSocials(): Promise<SocialWebItem[]> {
         let serverHelper = Container.get(ServerHelper);
 
-        let url = serverHelper.getBackendUrl() + "/socials/";
+        let url = serverHelper.getBackendUrl() + "/socials";
         let response = await fetch(url, {
             method: "GET"
         });
