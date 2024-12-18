@@ -6,7 +6,7 @@ export default function HomeSectionItems() {
     const router = useRouter();
 
     return (
-        <div className="grid grid-cols-4 justify-start mt-10">
+        <div className="grid md:grid-cols-4 grid-cols-2 justify-start mt-10 gap-x-5 sm:gap-1">
             <SectionItem title="Projects" logo="/icons/projects.svg" onClick={() => {
                 console.log("pushing to projects");
                 router.push("/pages/projects");
