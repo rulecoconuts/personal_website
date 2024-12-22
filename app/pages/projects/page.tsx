@@ -25,7 +25,7 @@ export default function ProjectsPage() {
                         Projects
                     </div>
                 </div>
-                <div className="grid grid-cols-2 auto-rows-min justify-start mt-10 gap-x-2 gap-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 auto-rows-min justify-start mt-10 gap-x-2 gap-y-2">
                     {projectViews}
                 </div>
             </div>
